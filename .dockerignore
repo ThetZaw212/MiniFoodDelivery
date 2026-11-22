@@ -1,0 +1,7 @@
+**/.env
+**/bin
+**/obj
+.git
+**/*.user
+**/.vs
+**/.idea

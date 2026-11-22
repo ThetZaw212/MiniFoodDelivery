@@ -1,0 +1,99 @@
+# Uses the SQL Server, Redis, and n8n containers you already have.
+# Containers reach them through host.docker.internal.
+name: minifood
+
+x-api-env: &api-env
+  ASPNETCORE_ENVIRONMENT: Docker
+  SQL_HOST: host.docker.internal
+  SQL_PORT: "1433"
+  SQL_SA_PASSWORD: ${SQL_SA_PASSWORD}
+  REDIS_HOST: host.docker.internal
+  REDIS_PORT: "6379"
+
+x-extra-hosts: &extra-hosts
+  - "host.docker.internal:host-gateway"
+
+services:
+  catalog:
+    image: minifood/catalog:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/Services/Catalog/Catalog.Api/Catalog.Api.csproj
+        ASSEMBLY: Catalog.Api.dll
+    environment:
+      <<: *api-env
+      INSTANCE_NAME: catalog
+      GRPC_LISTEN_PORT: "8081"
+    ports:
+      - "5081:8080"
+    extra_hosts: *extra-hosts
+
+  ordering:
+    image: minifood/ordering:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/Services/Ordering/Ordering.Api/Ordering.Api.csproj
+        ASSEMBLY: Ordering.Api.dll
+    environment:
+      <<: *api-env
+      INSTANCE_NAME: ordering
+      GRPC_CATALOG: http://catalog:8081
+      GRPC_DELIVERY: http://delivery:8081
+    ports:
+      - "5083:8080"
+    extra_hosts: *extra-hosts
+
+  delivery:
+    image: minifood/delivery:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/Services/Delivery/Delivery.Api/Delivery.Api.csproj
+        ASSEMBLY: Delivery.Api.dll
+    environment:
+      <<: *api-env
+      INSTANCE_NAME: delivery
+      GRPC_LISTEN_PORT: "8081"
+    ports:
+      - "5084:8080"
+    extra_hosts: *extra-hosts
+
+  notification:
+    image: minifood/notification:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/Services/Notification/Notification.Api/Notification.Api.csproj
+        ASSEMBLY: Notification.Api.dll
+    environment:
+      <<: *api-env
+      INSTANCE_NAME: notification
+      N8N_WEBHOOK_URL: http://host.docker.internal:5678/webhook/minifood-order-created
+    ports:
+      - "5085:8080"
+    extra_hosts: *extra-hosts
+
+  gateway:
+    image: minifood/gateway:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/Gateway/Gateway.Api/Gateway.Api.csproj
+        ASSEMBLY: Gateway.Api.dll
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      INSTANCE_NAME: gateway
+    ports:
+      - "5080:8080"
+    depends_on:
+      - catalog
+      - ordering
+      - delivery
+      - notification

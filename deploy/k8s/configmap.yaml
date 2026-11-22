@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minifood-config
+  namespace: minifood
+data:
+  ASPNETCORE_ENVIRONMENT: Kubernetes
+  ASPNETCORE_URLS: http://+:8080
+  SQL_HOST: host.docker.internal
+  SQL_PORT: "1433"
+  SQL_USER: sa
+  REDIS_HOST: host.docker.internal
+  REDIS_PORT: "6379"
+  GRPC_CATALOG: http://catalog:8081
+  GRPC_DELIVERY: http://delivery:8081
+  GRPC_LISTEN_PORT: "8081"
+  N8N_WEBHOOK_URL: http://host.docker.internal:5678/webhook/minifood-order-created

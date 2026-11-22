@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option csharp_namespace = "MiniFood.BuildingBlocks.Grpc";
+
+package catalog;
+
+// Synchronous call: Ordering asks Catalog for the real price before saving an order.
+service CatalogGrpc {
+  rpc GetMenuItem (GetMenuItemRequest) returns (GetMenuItemReply);
+}
+
+message GetMenuItemRequest {
+  string menu_item_id = 1;
+}
+
+message GetMenuItemReply {
+  bool found = 1;
+  string id = 2;
+  string restaurant_id = 3;
+  string restaurant_name = 4;
+  string name = 5;
+  string price = 6;
+  bool available = 7;
+}

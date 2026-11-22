@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+.env
+deploy/k8s/secret.yaml
+appsettings.*.local.json

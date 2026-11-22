@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option csharp_namespace = "MiniFood.BuildingBlocks.Grpc";
+
+package delivery;
+
+// Synchronous call: Ordering asks Delivery for the courier status of an order.
+service DeliveryGrpc {
+  rpc GetByOrderId (GetByOrderIdRequest) returns (GetByOrderIdReply);
+}
+
+message GetByOrderIdRequest {
+  string order_id = 1;
+}
+
+message GetByOrderIdReply {
+  bool found = 1;
+  string delivery_id = 2;
+  string order_id = 3;
+  string status = 4;
+  string courier_name = 5;
+}
