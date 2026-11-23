@@ -17,6 +17,11 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddDbContext<OrderingDbContext>(options =>
     options.UseSqlServer(Infrastructure.Sql("MiniFoodOrdering"), sql => sql.EnableRetryOnFailure()));
 builder.Services.AddMiniFoodRedis();
+builder.Services.AddHttpClient("catalog", client =>
+{
+    client.BaseAddress = new Uri(Infrastructure.Required("CATALOG_HTTP", "http://localhost:5081"));
+    client.Timeout = TimeSpan.FromSeconds(8);
+});
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 builder.Services.AddGrpcClient<CatalogGrpc.CatalogGrpcClient>(options =>
 {
@@ -47,6 +52,13 @@ await using (var scope = app.Services.CreateAsyncScope())
     var db = scope.ServiceProvider.GetRequiredService<OrderingDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("OrderingStartup");
     await DatabaseStartup.EnsureCreatedAsync(db, logger);
+    await db.Database.ExecuteSqlRawAsync(
+        """
+        IF COL_LENGTH('Orders', 'PaymentMethod') IS NULL
+            ALTER TABLE Orders ADD PaymentMethod nvarchar(40) NOT NULL CONSTRAINT DF_Orders_PaymentMethod DEFAULT ('Cash');
+        IF COL_LENGTH('Orders', 'PaymentLabel') IS NULL
+            ALTER TABLE Orders ADD PaymentLabel nvarchar(80) NOT NULL CONSTRAINT DF_Orders_PaymentLabel DEFAULT ('Cash');
+        """);
 }
 
 app.UseExceptionHandler();
