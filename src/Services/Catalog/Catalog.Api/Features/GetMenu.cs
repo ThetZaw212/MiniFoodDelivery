@@ -45,7 +45,7 @@ public sealed class GetMenuHandler(CatalogDbContext db, IDistributedCache cache,
             restaurant.Name,
             restaurant.MenuItems
                 .OrderBy(x => x.Name)
-                .Select(x => new MenuItemDto(x.Id, x.Name, x.Description, x.Price, x.IsAvailable))
+                .Select(x => new MenuItemDto(x.Id, x.Name, x.Description, x.Price, x.IsAvailable, x.Stock))
                 .ToList());
 
         try
