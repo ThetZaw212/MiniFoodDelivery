@@ -34,6 +34,6 @@ public sealed class AddMenuItemHandler(CatalogDbContext db, IDistributedCache ca
         db.MenuItems.Add(item);
         await db.SaveChangesAsync(cancellationToken);
         await cache.RemoveAsync(GetMenuHandler.CacheKey(request.RestaurantId), cancellationToken);
-        return new MenuItemDto(item.Id, item.Name, item.Description, item.Price, item.IsAvailable);
+        return new MenuItemDto(item.Id, item.Name, item.Description, item.Price, item.IsAvailable, item.Stock);
     }
 }
