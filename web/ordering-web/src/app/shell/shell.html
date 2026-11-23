@@ -1,0 +1,21 @@
+<div class="min-h-screen">
+  <header class="sticky top-0 z-20 border-b border-stone-200/80 bg-[#f4efe6]/90 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+      <a routerLink="/restaurants" class="display text-2xl text-[#3f1d1d]">Mini Food</a>
+      <nav class="ml-4 hidden gap-2 sm:flex">
+        <a routerLink="/restaurants" routerLinkActive="bg-white text-[#9f2d2d]" class="rounded-full px-3 py-1.5 text-sm">Restaurants</a>
+        <a routerLink="/orders" routerLinkActive="bg-white text-[#9f2d2d]" class="rounded-full px-3 py-1.5 text-sm">Orders</a>
+      </nav>
+      <div class="ml-auto flex items-center gap-2">
+        <a routerLink="/checkout" class="rounded-full bg-white px-3 py-1.5 text-sm">
+          Basket {{ cart.count() }} · {{ cart.total() | number: '1.0-0' }} MMK
+        </a>
+        <span class="hidden text-sm text-stone-600 md:inline">{{ auth.user()?.name }}</span>
+        <p-button label="Sign out" [text]="true" severity="secondary" (onClick)="signOut()" />
+      </div>
+    </div>
+  </header>
+  <div animate.enter="rise">
+    <router-outlet />
+  </div>
+</div>

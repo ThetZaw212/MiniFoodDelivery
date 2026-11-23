@@ -1,0 +1,25 @@
+<section class="mx-auto max-w-3xl px-4 py-10">
+  <h1 class="display text-5xl">Your orders</h1>
+  @if (orders().length === 0) {
+    <p class="mt-4 text-stone-600">No orders for this guest yet.</p>
+  }
+  <div class="mt-6 space-y-4">
+    @for (order of orders(); track order.id) {
+      <article class="rounded-3xl bg-white p-5" animate.enter="rise">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="display text-3xl">{{ order.restaurantName }}</h2>
+            <p class="text-sm text-stone-500">{{ order.createdAtUtc | date: 'medium' }} · {{ order.deliveryAddress }}</p>
+          </div>
+          <p-tag [value]="order.deliveryStatus" />
+        </div>
+        <ul class="mt-3 text-sm text-stone-700">
+          @for (line of order.lines; track line.menuItemId) {
+            <li>{{ line.quantity }} × {{ line.name }}</li>
+          }
+        </ul>
+        <p class="mt-3">{{ order.total | currency: 'MMK' : 'symbol-narrow' : '1.0-0' }} · {{ order.paymentLabel }}</p>
+      </article>
+    }
+  </div>
+</section>

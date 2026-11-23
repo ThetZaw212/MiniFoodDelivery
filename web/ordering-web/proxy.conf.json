@@ -1,0 +1,6 @@
+{
+  "/catalog": { "target": "http://localhost:5080", "secure": false },
+  "/orders": { "target": "http://localhost:5080", "secure": false },
+  "/delivery": { "target": "http://localhost:5080", "secure": false },
+  "/auth": { "target": "http://localhost:5080", "secure": false }
+}

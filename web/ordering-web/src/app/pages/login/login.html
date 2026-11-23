@@ -1,0 +1,37 @@
+<main class="grid min-h-screen lg:grid-cols-2">
+  <section class="relative hidden overflow-hidden bg-[#3f1d1d] text-[#f6efe4] lg:flex lg:flex-col lg:justify-between lg:p-14">
+    <p class="text-sm tracking-[0.28em] uppercase text-[#e7c9a4]">Mini Food</p>
+    <div animate.enter="rise">
+      <h1 class="display max-w-md text-6xl leading-none">Supper, sent across town.</h1>
+      <p class="mt-6 max-w-sm text-lg text-[#f0d7c4]">Pick a kitchen, keep an eye on what is still in the pot, and pay with a demo method.</p>
+    </div>
+    <p class="text-sm text-[#e7c9a4]">Yangon · Inle · home tables</p>
+  </section>
+
+  <section class="flex items-center justify-center px-6 py-16">
+    <form class="w-full max-w-md" [formGroup]="form" (ngSubmit)="submit()" animate.enter="rise">
+      <p class="text-sm tracking-[0.22em] uppercase text-[#9f2d2d]">Welcome back</p>
+      <h2 class="display mt-2 text-4xl">Sign in</h2>
+      <p class="mt-3 text-stone-600">A token lasts 4 hours, then the kitchen asks you to sign in again.</p>
+
+      <label class="mt-8 block text-sm font-medium" for="email">Email</label>
+      <input id="email" class="mt-2 w-full" pInputText formControlName="email" autocomplete="username" />
+
+      <label class="mt-5 block text-sm font-medium" for="password">Password</label>
+      <p-password inputId="password" styleClass="mt-2 w-full" inputStyleClass="w-full" formControlName="password" [feedback]="false" [toggleMask]="true" autocomplete="current-password" />
+
+      @if (error()) {
+        <p-message styleClass="mt-5 w-full" severity="error">{{ error() }}</p-message>
+      }
+
+      <p-button class="mt-6 block" styleClass="w-full" type="submit" label="Enter the kitchen" [loading]="busy()" />
+
+      <div class="mt-8 rounded-2xl bg-white/70 p-4 text-sm text-stone-600">
+        <p class="font-medium text-stone-800">Demo guests</p>
+        <p class="mt-1">thet@minifood.dev</p>
+        <p>aye@minifood.dev</p>
+        <p class="mt-1">Password Food1234!</p>
+      </div>
+    </form>
+  </section>
+</main>

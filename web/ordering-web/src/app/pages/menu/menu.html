@@ -1,0 +1,47 @@
+<section class="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1fr_320px]">
+  <div>
+    <a routerLink="/restaurants" class="text-sm text-[#9f2d2d]">All restaurants</a>
+    <h1 class="display mt-2 text-5xl">{{ menu()?.restaurantName }}</h1>
+    <p class="mt-2 text-stone-600">Stock is read from the kitchen before you pay. Adding a dish does not reserve it yet.</p>
+    @if (error()) {
+      <p class="mt-4 text-[#9f2d2d]">{{ error() }}</p>
+    }
+    <div class="mt-6 space-y-3">
+      @for (item of menu()?.items ?? []; track item.id) {
+        <article class="flex items-center justify-between gap-4 rounded-2xl bg-white p-4" animate.enter="rise">
+          <div>
+            <h2 class="text-xl">{{ item.name }}</h2>
+            <p class="text-sm text-stone-600">{{ item.description }}</p>
+            <p class="mt-2 text-sm">{{ item.price | currency: 'MMK' : 'symbol-narrow' : '1.0-0' }}</p>
+          </div>
+          <div class="flex flex-col items-end gap-2">
+            <p-tag [value]="stockLabel(item)" [severity]="item.stock <= 8 ? 'danger' : 'secondary'" />
+            <p-button label="Add" [disabled]="!item.isAvailable || item.stock < 1" (onClick)="add(item)" />
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+
+  <aside class="h-fit rounded-3xl bg-[#3f1d1d] p-5 text-[#f6efe4] lg:sticky lg:top-24">
+    <h2 class="display text-3xl">Basket</h2>
+    @if (cart.lines().length === 0) {
+      <p class="mt-3 text-[#f0d7c4]">Nothing chosen yet.</p>
+    } @else {
+      <ul class="mt-4 space-y-3 text-sm">
+        @for (line of cart.lines(); track line.menuItemId) {
+          <li class="flex items-center justify-between gap-3">
+            <span>{{ line.name }}</span>
+            <span class="flex items-center gap-2">
+              <button type="button" class="rounded-full bg-white/10 px-2" (click)="cart.setQuantity(line.menuItemId, line.quantity - 1)">−</button>
+              {{ line.quantity }}
+              <button type="button" class="rounded-full bg-white/10 px-2" (click)="cart.setQuantity(line.menuItemId, line.quantity + 1)">+</button>
+            </span>
+          </li>
+        }
+      </ul>
+      <p class="mt-4 text-lg">{{ cart.total() | currency: 'MMK' : 'symbol-narrow' : '1.0-0' }}</p>
+      <a routerLink="/checkout" class="mt-4 inline-block rounded-full bg-[#f6efe4] px-4 py-2 text-sm text-[#3f1d1d]">Check stock and pay</a>
+    }
+  </aside>
+</section>
