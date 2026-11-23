@@ -12,11 +12,14 @@ public record CreateOrderCommand(
     Guid RestaurantId,
     string CustomerName,
     string DeliveryAddress,
-    IReadOnlyList<OrderLineRequest> Lines) : IRequest<OrderDto>;
+    IReadOnlyList<OrderLineRequest> Lines,
+    string? PaymentMethod,
+    string? PaymentLabel) : IRequest<OrderDto>;
 
 public sealed class CreateOrderHandler(
     OrderingDbContext db,
     CatalogGrpc.CatalogGrpcClient catalog,
+    IHttpClientFactory httpClientFactory,
     IEventBus bus,
     ILogger<CreateOrderHandler> logger) : IRequestHandler<CreateOrderCommand, OrderDto>
 {
@@ -28,6 +31,13 @@ public sealed class CreateOrderHandler(
             throw new AppException("Delivery address is required.");
         if (request.Lines.Count == 0)
             throw new AppException("Add at least one menu item.");
+
+        var paymentMethod = string.IsNullOrWhiteSpace(request.PaymentMethod) ? "Cash" : request.PaymentMethod.Trim();
+        var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Cash", "Bank", "Visa", "Mastercard", "MPU", "PayPal" };
+        if (!allowed.Contains(paymentMethod))
+            throw new AppException("Choose cash, bank, Visa, Mastercard, MPU, or PayPal.");
+        paymentMethod = allowed.First(x => x.Equals(paymentMethod, StringComparison.OrdinalIgnoreCase));
+        var paymentLabel = string.IsNullOrWhiteSpace(request.PaymentLabel) ? paymentMethod : request.PaymentLabel.Trim();
 
         var lines = new List<OrderLine>();
         string restaurantName = "";
@@ -79,13 +89,25 @@ public sealed class CreateOrderHandler(
             CustomerName = request.CustomerName.Trim(),
             DeliveryAddress = request.DeliveryAddress.Trim(),
             Status = "Placed",
+            PaymentMethod = paymentMethod,
+            PaymentLabel = paymentLabel,
             Total = total,
             CreatedAtUtc = DateTime.UtcNow,
             Lines = lines
         };
 
-        db.Orders.Add(order);
-        await db.SaveChangesAsync(cancellationToken);
+        await ReserveStockAsync(request.Lines, cancellationToken);
+
+        try
+        {
+            db.Orders.Add(order);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            await ReleaseStockAsync(request.Lines, cancellationToken);
+            throw;
+        }
 
         try
         {
@@ -104,5 +126,30 @@ public sealed class CreateOrderHandler(
         }
 
         return OrderMapper.ToDto(order, "pending", null);
+    }
+
+    private async Task ReserveStockAsync(IReadOnlyList<OrderLineRequest> lines, CancellationToken cancellationToken)
+    {
+        var client = httpClientFactory.CreateClient("catalog");
+        var response = await client.PostAsJsonAsync("/api/stock/reserve", new { lines }, cancellationToken);
+        if (response.IsSuccessStatusCode)
+            return;
+
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+        logger.LogWarning("Stock reserve failed {Status}: {Body}", (int)response.StatusCode, body);
+        throw new AppException("A dish just sold out. Review the basket and try again.", StatusCodes.Status409Conflict);
+    }
+
+    private async Task ReleaseStockAsync(IReadOnlyList<OrderLineRequest> lines, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var client = httpClientFactory.CreateClient("catalog");
+            await client.PostAsJsonAsync("/api/stock/release", new { lines }, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Stock was reserved but could not be released.");
+        }
     }
 }
