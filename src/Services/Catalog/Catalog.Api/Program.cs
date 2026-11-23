@@ -45,7 +45,11 @@ await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("CatalogStartup");
-    await DatabaseStartup.EnsureCreatedAsync(db, logger, () => CatalogSeed.SeedAsync(db));
+    await DatabaseStartup.EnsureCreatedAsync(db, logger, async () =>
+    {
+        await CatalogSeed.SeedAsync(db);
+        await CatalogSeed.EnsureStockColumnAsync(db);
+    });
 }
 
 app.UseExceptionHandler();
