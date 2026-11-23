@@ -17,5 +17,7 @@ public static class OrderMapper
             order.CreatedAtUtc,
             deliveryStatus,
             courierName,
+            order.PaymentMethod,
+            order.PaymentLabel,
             order.Lines.Select(x => new OrderLineDto(x.MenuItemId, x.Name, x.UnitPrice, x.Quantity)).ToList());
 }
