@@ -43,6 +43,7 @@ services:
       INSTANCE_NAME: ordering
       GRPC_CATALOG: http://catalog:8081
       GRPC_DELIVERY: http://delivery:8081
+      CATALOG_HTTP: http://catalog:8080
     ports:
       - "5083:8080"
     extra_hosts: *extra-hosts
@@ -79,6 +80,21 @@ services:
       - "5085:8080"
     extra_hosts: *extra-hosts
 
+  auth:
+    image: minifood/auth:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        PROJECT: src/Services/Auth/Auth.Api/Auth.Api.csproj
+        ASSEMBLY: Auth.Api.dll
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      INSTANCE_NAME: auth
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:-minifood-dev-signing-key-change-me}
+    ports:
+      - "5086:8080"
+
   gateway:
     image: minifood/gateway:local
     build:
@@ -97,3 +113,4 @@ services:
       - ordering
       - delivery
       - notification
+      - auth
