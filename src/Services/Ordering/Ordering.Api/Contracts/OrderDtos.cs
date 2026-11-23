@@ -6,7 +6,9 @@ public record CreateOrderRequest(
     Guid RestaurantId,
     string CustomerName,
     string DeliveryAddress,
-    List<OrderLineRequest> Lines);
+    List<OrderLineRequest> Lines,
+    string? PaymentMethod,
+    string? PaymentLabel);
 
 public record UpdateOrderStatusRequest(string Status);
 
@@ -23,4 +25,6 @@ public record OrderDto(
     DateTime CreatedAtUtc,
     string DeliveryStatus,
     string? CourierName,
+    string PaymentMethod,
+    string PaymentLabel,
     IReadOnlyList<OrderLineDto> Lines);
