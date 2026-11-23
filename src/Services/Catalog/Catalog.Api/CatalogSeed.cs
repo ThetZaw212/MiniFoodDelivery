@@ -27,8 +27,8 @@ public static class CatalogSeed
                 IsOpen = true,
                 MenuItems =
                 [
-                    new MenuItem { Id = TeaLeafSalad, Name = "Tea Leaf Salad", Description = "Laphet thoke", Price = 4500m },
-                    new MenuItem { Id = Mohinga, Name = "Mohinga", Description = "Fish noodle soup", Price = 3500m }
+                    new MenuItem { Id = TeaLeafSalad, Name = "Tea Leaf Salad", Description = "Laphet thoke", Price = 4500m, Stock = 40 },
+                    new MenuItem { Id = Mohinga, Name = "Mohinga", Description = "Fish noodle soup", Price = 3500m, Stock = 80 }
                 ]
             },
             new Restaurant
@@ -40,11 +40,25 @@ public static class CatalogSeed
                 IsOpen = true,
                 MenuItems =
                 [
-                    new MenuItem { Id = ShanNoodles, Name = "Shan Noodles", Description = "Rice noodles with chicken", Price = 4000m },
-                    new MenuItem { Id = MilkTea, Name = "Milk Tea", Description = "Hot milk tea", Price = 1500m }
+                    new MenuItem { Id = ShanNoodles, Name = "Shan Noodles", Description = "Rice noodles with chicken", Price = 4000m, Stock = 60 },
+                    new MenuItem { Id = MilkTea, Name = "Milk Tea", Description = "Hot milk tea", Price = 1500m, Stock = 100 }
                 ]
             });
 
         await db.SaveChangesAsync();
+    }
+
+    public static async Task EnsureStockColumnAsync(CatalogDbContext db)
+    {
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            IF COL_LENGTH('MenuItems', 'Stock') IS NULL
+                ALTER TABLE MenuItems ADD Stock int NOT NULL CONSTRAINT DF_MenuItems_Stock DEFAULT (0);
+            """);
+        await db.Database.ExecuteSqlRawAsync(
+            """
+            IF NOT EXISTS (SELECT 1 FROM MenuItems WHERE Stock > 0)
+                UPDATE MenuItems SET Stock = 60;
+            """);
     }
 }
