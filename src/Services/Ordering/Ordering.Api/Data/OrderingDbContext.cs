@@ -16,6 +16,8 @@ public class OrderingDbContext(DbContextOptions<OrderingDbContext> options) : Db
             order.Property(x => x.CustomerName).HasMaxLength(120);
             order.Property(x => x.DeliveryAddress).HasMaxLength(240);
             order.Property(x => x.Status).HasMaxLength(40);
+            order.Property(x => x.PaymentMethod).HasMaxLength(40);
+            order.Property(x => x.PaymentLabel).HasMaxLength(80);
             order.Property(x => x.Total).HasPrecision(18, 2);
             order.HasMany(x => x.Lines).WithOne(x => x.Order).HasForeignKey(x => x.OrderId);
         });
@@ -37,6 +39,8 @@ public class CustomerOrder
     public string CustomerName { get; set; } = "";
     public string DeliveryAddress { get; set; } = "";
     public string Status { get; set; } = "Placed";
+    public string PaymentMethod { get; set; } = "Cash";
+    public string PaymentLabel { get; set; } = "Cash";
     public decimal Total { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public List<OrderLine> Lines { get; set; } = [];
