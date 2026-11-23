@@ -45,6 +45,7 @@ public class MenuItem
     public string Name { get; set; } = "";
     public string Description { get; set; } = "";
     public decimal Price { get; set; }
+    public int Stock { get; set; }
     public bool IsAvailable { get; set; } = true;
     public Restaurant? Restaurant { get; set; }
 }
