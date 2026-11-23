@@ -9,4 +9,5 @@ resources:
   - ordering.yaml
   - delivery.yaml
   - notification.yaml
+  - auth.yaml
   - gateway.yaml
