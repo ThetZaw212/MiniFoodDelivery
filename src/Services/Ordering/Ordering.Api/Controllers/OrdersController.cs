@@ -27,7 +27,7 @@ public class OrdersController(IMediator mediator) : ControllerBase
     public async Task<ActionResult<OrderDto>> Create(CreateOrderRequest request, CancellationToken cancellationToken)
     {
         var created = await mediator.Send(
-            new CreateOrderCommand(request.RestaurantId, request.CustomerName, request.DeliveryAddress, request.Lines ?? []),
+            new CreateOrderCommand(request.RestaurantId, request.CustomerName, request.DeliveryAddress, request.Lines ?? [], request.PaymentMethod, request.PaymentLabel),
             cancellationToken);
         return Created($"/api/orders/{created.Id}", created);
     }
